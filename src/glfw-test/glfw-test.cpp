@@ -5,12 +5,19 @@
 
 #include <glm/glm.hpp>
 
+void error_callback(int error, const char *description)
+{
+	fputs(description, stderr);
+}
+
 int main(void)
 {
 	GLFWwindow* window;
 
 	if (!glfwInit())
 		return -1;
+
+	glfwSetErrorCallback(error_callback);
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
