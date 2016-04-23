@@ -4,6 +4,3 @@ GLFW_DEP= `pkg-config --cflags glfw3` `pkg-config --static --libs glfw3` -framew
 
 triangle: triangle.cpp
 	$(CC) triangle.cpp shader.cpp -o triangle $(GLFW_DEP) $(LIB)
-
-glfw-test: glfw-test.cpp
-	$(CC) glfw-test.cpp -o glfw-test $(GLFW_DEP) $(LIB)
