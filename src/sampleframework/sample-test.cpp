@@ -1,5 +1,10 @@
 #include "sample.hpp"
 
+#include <cstdio>
+#include <cstdlib>
+
+#include <signal.h>
+
 class HelloSample : public Sample
 {
 public:
@@ -21,9 +26,32 @@ public:
 	}
 };
 
+Sample* helloSample = nullptr;
+
+void funCatch(int signal)
+{
+	if (helloSample == nullptr)
+		return;
+
+	helloSample->destroy();
+
+	if (helloSample) {
+		delete helloSample;
+		helloSample = nullptr;
+	}
+
+	printf("interrupted!\n");
+
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char** argv)
 {
-	auto helloSample = new HelloSample();
+	if (signal(SIGINT, funCatch) == SIG_ERR) {
+		fprintf(stderr, "cannot catch signal\n");
+	}
+
+	helloSample = new HelloSample();
 	helloSample->init();
 
 	helloSample->run();
