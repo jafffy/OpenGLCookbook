@@ -10,7 +10,7 @@
 
 #include "shader.hpp"
 
-class TriangleSample : public Sample
+class TransformSample : public Sample
 {
 public:
 	virtual bool initContents()
@@ -81,18 +81,18 @@ private:
 	GLuint _program;
 };
 
-Sample* triangleSample = nullptr;
+Sample* transformSample = nullptr;
 
 void funCatch(int signal)
 {
-	if (triangleSample == nullptr)
+	if (transformSample == nullptr)
 		return;
 
-	triangleSample->destroy();
+	transformSample->destroy();
 
-	if (triangleSample) {
-		delete triangleSample;
-		triangleSample = nullptr;
+	if (transformSample) {
+		delete transformSample;
+		transformSample = nullptr;
 	}
 
 	printf("interrupted!\n");
@@ -106,16 +106,16 @@ int main(int argc, char** argv)
 		fprintf(stderr, "cannot catch signal\n");
 	}
 
-	triangleSample = new TriangleSample();
-	triangleSample->init();
+	transformSample = new TransformSample();
+	transformSample->init();
 
-	triangleSample->run();
+	transformSample->run();
 
-	triangleSample->destroy();
+	transformSample->destroy();
 
-	if (triangleSample) {
-		delete triangleSample;
-		triangleSample = nullptr;
+	if (transformSample) {
+		delete transformSample;
+		transformSample = nullptr;
 	}
 
 	return 0;
