@@ -104,8 +104,15 @@ void Sample::run()
 {
 	assert(impl);
 
+	double lastTime = glfwGetTime();
+
 	while (is_running()) {
-		update(0.0f);
+		double currentTime = glfwGetTime();
+
+		update(currentTime - lastTime);
+
+		lastTime = currentTime;
+
 		render();
 
 		glfwSwapBuffers(impl->window());

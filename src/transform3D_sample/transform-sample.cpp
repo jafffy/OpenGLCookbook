@@ -71,6 +71,8 @@ public:
 
 		glUseProgram(0);
 
+		_globalTimer = 0.0f;
+
 		return true;
 	}
 
@@ -84,6 +86,28 @@ public:
 
 	virtual void update(float dt)
 	{
+		auto T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		auto R = glm::rotate(glm::mat4(1.0f), _globalTimer, glm::vec3(0.0f, 1.0f, 0.0f));
+		auto S = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+		auto M = T * R * S;
+
+		auto V = glm::lookAt(
+				glm::vec3(4,3,3),
+				glm::vec3(0,0,0),
+				glm::vec3(0,1,0)
+				);
+
+		auto P = glm::perspective(45.0f, (float)windowWidth() / windowHeight(),
+				0.1f, 100.0f);
+
+		auto MVP = P * V * M;
+
+		glUseProgram(_program);
+		glUniformMatrix4fv(_MID, 1, false, glm::value_ptr(MVP));
+		glUseProgram(0);
+
+		_globalTimer += dt;
 	}
 
 	virtual void render()
@@ -109,6 +133,8 @@ private:
 
 	GLuint _program;
 	GLuint _MID;
+
+	float _globalTimer;
 };
 
 Sample* transformSample = nullptr;
