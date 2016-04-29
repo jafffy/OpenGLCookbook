@@ -9,7 +9,7 @@
 class Sample_Impl {
 public:
 	Sample_Impl()
-		: _GLFWwindow(nullptr)
+		: _GLFWwindow(nullptr), _windowWidth(640), _windowHeight(480)
 	{
 	}
 
@@ -24,7 +24,8 @@ public:
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		_GLFWwindow = glfwCreateWindow(640, 480, "Hello World", nullptr, nullptr);
+		_GLFWwindow = glfwCreateWindow(_windowWidth, _windowHeight, 
+				"Hello World", nullptr, nullptr);
 		if (!_GLFWwindow)
 		{
 			glfwTerminate();
@@ -53,9 +54,13 @@ public:
 	}
 
 	GLFWwindow* window() { return _GLFWwindow; }
+	int windowWidth() const { return _windowWidth; }
+	int windowHeight() const { return _windowHeight; }
 
 private:
 	GLFWwindow* _GLFWwindow;
+	int _windowWidth;
+	int _windowHeight;
 };
 
 Sample::Sample()
@@ -106,4 +111,18 @@ void Sample::run()
 		glfwSwapBuffers(impl->window());
 		glfwPollEvents();
 	}
+}
+
+int Sample::windowWidth() const
+{
+	assert(impl);
+
+	return impl->windowWidth();
+}
+
+int Sample::windowHeight() const
+{
+	assert(impl);
+
+	return impl->windowHeight();
 }

@@ -8,6 +8,10 @@
 
 #include <GL/glew.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "shader.hpp"
 
 class TransformSample : public Sample
@@ -42,6 +46,18 @@ public:
 
 		glBindVertexArray(0);
 
+		glUseProgram(_program);
+
+		_MID = glGetUniformLocation(_program, "M");
+
+		auto T = glm::translate(glm::mat4(1.0f), glm::vec3(300.0f, 300.0f, 0.0f));
+		auto R = glm::rotate(glm::mat4(1.0f), 20.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		auto S = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 50.0f, 1.0f));
+		auto P = glm::ortho(0.0f, (float)windowWidth(), 0.0f, (float)windowHeight());
+		auto M = P * T * R * S;
+		glUniformMatrix4fv(_MID, 1, false, glm::value_ptr(M));
+
+		glUseProgram(0);
 
 		return true;
 	}
@@ -60,6 +76,7 @@ public:
 
 	virtual void render()
 	{
+		glViewport(0, 0, windowWidth(), windowHeight());
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(_program);
@@ -79,6 +96,7 @@ private:
 	GLuint _vao, _vbo;
 
 	GLuint _program;
+	GLuint _MID;
 };
 
 Sample* transformSample = nullptr;

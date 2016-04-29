@@ -22,6 +22,9 @@ public:
 
 	virtual void run();
 
+	virtual int windowWidth() const;
+	virtual int windowHeight() const;
+
 protected:
 	Sample_Impl* impl;
 };
