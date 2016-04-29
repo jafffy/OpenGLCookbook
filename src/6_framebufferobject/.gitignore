@@ -1,0 +1,5 @@
+instancing-sample
+*.o
+*.swp
+*.dll
+x64
