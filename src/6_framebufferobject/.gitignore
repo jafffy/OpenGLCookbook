@@ -3,3 +3,7 @@ instancing-sample
 *.swp
 *.dll
 x64
+.vs
+.opendb
+*.opendb
+*.sdf

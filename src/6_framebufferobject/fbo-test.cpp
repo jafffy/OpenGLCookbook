@@ -16,7 +16,7 @@
 
 #include "shader.hpp"
 
-class InstancingSample : public Sample
+class FBOSample : public Sample
 {
 public:
 	virtual bool initContents()
@@ -133,7 +133,7 @@ public:
 
 	virtual void render()
 	{
-		glViewport(windowWidth() / 2, windowHeight() / 2, windowWidth(), windowHeight());
+		glViewport(0, 0, windowWidth(), windowHeight());
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(_program);
@@ -164,18 +164,18 @@ private:
 	float _globalTimer;
 };
 
-Sample* instancingSample = nullptr;
+Sample* fboSample = nullptr;
 
 void funCatch(int signal)
 {
-	if (instancingSample == nullptr)
+	if (fboSample == nullptr)
 		return;
 
-	instancingSample->destroy();
+	fboSample->destroy();
 
-	if (instancingSample) {
-		delete instancingSample;
-		instancingSample = nullptr;
+	if (fboSample) {
+		delete fboSample;
+		fboSample = nullptr;
 	}
 
 	printf("interrupted!\n");
@@ -189,16 +189,16 @@ int main(int argc, char** argv)
 		fprintf(stderr, "cannot catch signal\n");
 	}
 
-	instancingSample = new InstancingSample();
-	instancingSample->init();
+	fboSample = new FBOSample();
+	fboSample->init();
 
-	instancingSample->run();
+	fboSample->run();
 
-	instancingSample->destroy();
+	fboSample->destroy();
 
-	if (instancingSample) {
-		delete instancingSample;
-		instancingSample = nullptr;
+	if (fboSample) {
+		delete fboSample;
+		fboSample = nullptr;
 	}
 
 	return 0;
