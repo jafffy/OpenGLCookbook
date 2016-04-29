@@ -48,26 +48,7 @@ public:
 
 		glUseProgram(_program);
 
-		_MID = glGetUniformLocation(_program, "M");
-
-		auto T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-		auto R = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		auto S = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-
-		auto M = T * R * S;
-
-		auto V = glm::lookAt(
-				glm::vec3(4,3,3),
-				glm::vec3(0,0,0),
-				glm::vec3(0,1,0)
-				);
-
-		auto P = glm::perspective(45.0f, (float)windowWidth() / windowHeight(),
-				0.1f, 100.0f);
-
-		auto MVP = P * V * M;
-
-		glUniformMatrix4fv(_MID, 1, false, glm::value_ptr(MVP));
+		_VPID = glGetUniformLocation(_program, "VP");
 
 		glUseProgram(0);
 
@@ -101,10 +82,10 @@ public:
 		auto P = glm::perspective(45.0f, (float)windowWidth() / windowHeight(),
 				0.1f, 100.0f);
 
-		auto MVP = P * V * M;
+		auto VP = P * V;
 
 		glUseProgram(_program);
-		glUniformMatrix4fv(_MID, 1, false, glm::value_ptr(MVP));
+		glUniformMatrix4fv(_VPID, 1, false, glm::value_ptr(VP));
 		glUseProgram(0);
 
 		_globalTimer += dt;
@@ -132,7 +113,7 @@ private:
 	GLuint _vao, _vbo;
 
 	GLuint _program;
-	GLuint _MID;
+	GLuint _VPID;
 
 	float _globalTimer;
 };
