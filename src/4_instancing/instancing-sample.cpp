@@ -14,7 +14,7 @@
 
 #include "shader.hpp"
 
-class TransformSample : public Sample
+class InstancingSample : public Sample
 {
 public:
 	virtual bool initContents()
@@ -27,7 +27,7 @@ public:
 		if (_vao == -1)
 			return false;
 
-		_program = LoadShaders("transform.vert", "transform.frag");
+		_program = LoadShaders("instancing.vert", "instancing.frag");
 		assert(_program != -1);
 
 		static const GLfloat g_vertex_buffer_data[] = {
@@ -137,18 +137,18 @@ private:
 	float _globalTimer;
 };
 
-Sample* transformSample = nullptr;
+Sample* instancingSample = nullptr;
 
 void funCatch(int signal)
 {
-	if (transformSample == nullptr)
+	if (instancingSample == nullptr)
 		return;
 
-	transformSample->destroy();
+	instancingSample->destroy();
 
-	if (transformSample) {
-		delete transformSample;
-		transformSample = nullptr;
+	if (instancingSample) {
+		delete instancingSample;
+		instancingSample = nullptr;
 	}
 
 	printf("interrupted!\n");
@@ -162,16 +162,16 @@ int main(int argc, char** argv)
 		fprintf(stderr, "cannot catch signal\n");
 	}
 
-	transformSample = new TransformSample();
-	transformSample->init();
+	instancingSample = new InstancingSample();
+	instancingSample->init();
 
-	transformSample->run();
+	instancingSample->run();
 
-	transformSample->destroy();
+	instancingSample->destroy();
 
-	if (transformSample) {
-		delete transformSample;
-		transformSample = nullptr;
+	if (instancingSample) {
+		delete instancingSample;
+		instancingSample = nullptr;
 	}
 
 	return 0;
