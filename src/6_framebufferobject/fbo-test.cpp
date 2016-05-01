@@ -28,7 +28,7 @@ public:
 
 		glBindVertexArray(_vao);
 		{
-			_program = LoadShaders("instancing.vert", "instancing.frag");
+			_program = LoadShaders("content.vert", "content.frag");
 			assert(_program != -1);
 
 			static const GLfloat g_vertex_buffer_data[] = {

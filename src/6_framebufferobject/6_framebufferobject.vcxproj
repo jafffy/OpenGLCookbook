@@ -23,14 +23,16 @@
     <ClInclude Include="shader.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="instancing-sample.cpp" />
+    <ClCompile Include="fbo-test.cpp" />
     <ClCompile Include="sample.cpp" />
     <ClCompile Include="shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="instancing.frag" />
-    <None Include="instancing.vert" />
+    <None Include="content.frag" />
+    <None Include="content.vert" />
+    <None Include="fbo.frag" />
+    <None Include="fbo.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{BF64F5BC-0E32-4D46-8E01-6B7CA2E14B19}</ProjectGuid>
