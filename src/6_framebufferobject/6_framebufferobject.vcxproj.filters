@@ -6,12 +6,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="shader.cpp" />
-    <ClCompile Include="instancing-sample.cpp" />
     <ClCompile Include="sample.cpp" />
+    <ClCompile Include="fbo-test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="instancing.frag" />
-    <None Include="instancing.vert" />
+    <None Include="fbo.vert" />
+    <None Include="fbo.frag" />
+    <None Include="content.vert" />
+    <None Include="content.frag" />
   </ItemGroup>
 </Project>
