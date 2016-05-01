@@ -23,13 +23,13 @@ public:
 	{
 		glClearColor(0.0f, 0.0f, 0.3f, 0.0f);
 
-		glGenVertexArrays(1, &_vao);
-		assert(_vao != -1);
+		glGenVertexArrays(1, &_contentVAO);
+		assert(_contentVAO != -1);
 
-		glBindVertexArray(_vao);
+		glBindVertexArray(_contentVAO);
 		{
-			_program = LoadShaders("content.vert", "content.frag");
-			assert(_program != -1);
+			_contentProgram = LoadShaders("content.vert", "content.frag");
+			assert(_contentProgram != -1);
 
 			static const GLfloat g_vertex_buffer_data[] = {
 				-1.0f, -1.0f, 0.0f,
@@ -37,10 +37,10 @@ public:
 				 0.0f,  1.0f, 0.0f,
 			};
 
-			glGenBuffers(1, &_vbo);
-			assert(_vbo != -1);
+			glGenBuffers(1, &_contentVBO);
+			assert(_contentVBO != -1);
 
-			glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+			glBindBuffer(GL_ARRAY_BUFFER, _contentVBO);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -57,14 +57,14 @@ public:
 					memcpy(transform_buffer_data + 16 * i, glm::value_ptr(M), sizeof(float) * 16);
 				}
 
-				glGenBuffers(1, &_transformBufferObject);
-				glBindBuffer(GL_TEXTURE_BUFFER, _transformBufferObject);
+				glGenBuffers(1, &_contentTransformBO);
+				glBindBuffer(GL_TEXTURE_BUFFER, _contentTransformBO);
 				glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 16 * 4,
 						transform_buffer_data, GL_STATIC_DRAW);
 
-				glGenTextures(1, &_transformTBO);
-				glBindTexture(GL_TEXTURE_BUFFER, _transformTBO);
-				glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, _transformBufferObject);
+				glGenTextures(1, &_contentTransformTBO);
+				glBindTexture(GL_TEXTURE_BUFFER, _contentTransformTBO);
+				glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, _contentTransformBO);
 			}
 			if (transform_buffer_data) {
 				delete[] transform_buffer_data;
@@ -73,8 +73,8 @@ public:
 		}
 		glBindVertexArray(0);
 
-		_VPID = glGetUniformLocation(_program, "VP");
-		_MsID = glGetUniformLocation(_program, "Ms");
+		_contentVPID = glGetUniformLocation(_contentProgram, "VP");
+		_contentMsID = glGetUniformLocation(_contentProgram, "Ms");
 
 		_globalTimer = 0.0f;
 
@@ -83,19 +83,19 @@ public:
 
 	virtual void destroyContents()
 	{
-		glDeleteVertexArrays(1, &_vao);
-		glDeleteBuffers(1, &_vbo);
-		glDeleteBuffers(1, &_transformBufferObject);
+		glDeleteVertexArrays(1, &_contentVAO);
+		glDeleteBuffers(1, &_contentVBO);
+		glDeleteBuffers(1, &_contentTransformBO);
 
-		glDeleteTextures(1, &_transformTBO);
+		glDeleteTextures(1, &_contentTransformTBO);
 
-		glDeleteProgram(_program);
+		glDeleteProgram(_contentProgram);
 	}
 
 	virtual void update(float dt)
 	{
-		glBindVertexArray(_vao);
-		glBindBuffer(GL_TEXTURE_BUFFER, _transformBufferObject);
+		glBindVertexArray(_contentVAO);
+		glBindBuffer(GL_TEXTURE_BUFFER, _contentTransformBO);
 
 		float* pointer = (float*)glMapBufferRange(GL_TEXTURE_BUFFER, 0, sizeof(float) * 16 * 4, GL_MAP_WRITE_BIT);
 		assert(pointer);
@@ -123,9 +123,9 @@ public:
 
 		auto VP = P * V;
 
-		glUseProgram(_program);
-		glUniform1i(_MsID, 0);
-		glUniformMatrix4fv(_VPID, 1, false, glm::value_ptr(VP));
+		glUseProgram(_contentProgram);
+		glUniform1i(_contentMsID, 0);
+		glUniformMatrix4fv(_contentVPID, 1, false, glm::value_ptr(VP));
 		glUseProgram(0);
 
 		_globalTimer += dt;
@@ -136,14 +136,14 @@ public:
 		glViewport(0, 0, windowWidth(), windowHeight());
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(_program);
+		glUseProgram(_contentProgram);
 
-		glBindVertexArray(_vao);
+		glBindVertexArray(_contentVAO);
 		{
 			glEnableVertexAttribArray(0);
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_BUFFER, _transformTBO);
+			glBindTexture(GL_TEXTURE_BUFFER, _contentTransformTBO);
 			glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 4);
 
 			glDisableVertexAttribArray(0);
@@ -153,29 +153,29 @@ public:
 	}
 
 private:
-	GLuint _vao, _vbo;
-	GLuint _transformBufferObject;
-	GLuint _transformTBO;
+	GLuint _contentVAO, _contentVBO;
+	GLuint _contentTransformBO;
+	GLuint _contentTransformTBO;
 
-	GLuint _program;
-	GLuint _VPID;
-	GLuint _MsID;
+	GLuint _contentProgram;
+	GLuint _contentVPID;
+	GLuint _contentMsID;
 
 	float _globalTimer;
 };
 
-Sample* fboSample = nullptr;
+Sample* sample = nullptr;
 
-void funCatch(int signal)
+void interruptHandler(int signal)
 {
-	if (fboSample == nullptr)
+	if (sample == nullptr)
 		return;
 
-	fboSample->destroy();
+	sample->destroy();
 
-	if (fboSample) {
-		delete fboSample;
-		fboSample = nullptr;
+	if (sample) {
+		delete sample;
+		sample = nullptr;
 	}
 
 	printf("interrupted!\n");
@@ -185,20 +185,20 @@ void funCatch(int signal)
 
 int main(int argc, char** argv)
 {
-	if (signal(SIGINT, funCatch) == SIG_ERR) {
+	if (signal(SIGINT, interruptHandler) == SIG_ERR) {
 		fprintf(stderr, "cannot catch signal\n");
 	}
 
-	fboSample = new FBOSample();
-	fboSample->init();
+	sample = new FBOSample();
+	sample->init();
 
-	fboSample->run();
+	sample->run();
 
-	fboSample->destroy();
+	sample->destroy();
 
-	if (fboSample) {
-		delete fboSample;
-		fboSample = nullptr;
+	if (sample) {
+		delete sample;
+		sample = nullptr;
 	}
 
 	return 0;
