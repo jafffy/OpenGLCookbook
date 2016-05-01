@@ -1,8 +1,12 @@
-#version 330 core
+#version 430 core
 
-out vec3 outColor;
+in vec2 UV;
+
+out vec4 outColor;
+
+uniform sampler2D renderedTextureSampler;
 
 void main(void)
 {
-	outColor = vec3(1, 0, 0);
+	outColor = texture(renderedTextureSampler, UV);
 }
