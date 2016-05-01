@@ -1,10 +1,12 @@
 #version 430 core
 
-in vec4 vsOutColor;
+in vec2 UV;
 
 out vec4 outColor;
 
+uniform sampler2D renderedTextureSampler;
+
 void main(void)
 {
-	outColor = vsOutColor;
+	outColor = texture(renderedTextureSampler, UV);
 }

@@ -36,6 +36,9 @@ private:
 	float _globalTimer;
 
 	GLuint _fboVAO, _fboVBO;
+	GLuint _fboFBO, _fboRenderedTBO;
+
+	GLuint _fboRenderedTBOID;
 
 	GLuint _fboProgram;
 };
@@ -93,6 +96,9 @@ bool FBOSample::initContents()
 		_contentProgram = LoadShaders("content.vert", "content.frag");
 		assert(_contentProgram != -1);
 
+		_contentVPID = glGetUniformLocation(_contentProgram, "VP");
+		_contentMsID = glGetUniformLocation(_contentProgram, "Ms");
+
 		static const GLfloat g_vertex_buffer_data[] = {
 			-1.0f, -1.0f, 0.0f,
 			 1.0f, -1.0f, 0.0f,
@@ -135,8 +141,57 @@ bool FBOSample::initContents()
 	}
 	glBindVertexArray(0);
 
-	_contentVPID = glGetUniformLocation(_contentProgram, "VP");
-	_contentMsID = glGetUniformLocation(_contentProgram, "Ms");
+	glGenVertexArrays(1, &_fboVAO);
+	glBindVertexArray(_fboVAO);
+	{
+		glGenFramebuffers(1, &_fboFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, _fboFBO);
+
+		glGenTextures(1, &_fboRenderedTBO);
+		glBindTexture(GL_TEXTURE_2D, _fboRenderedTBO);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowWidth(), windowHeight(), 
+			0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _fboRenderedTBO, 0);
+
+		GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, drawBuffers);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			return false;
+
+		_fboProgram = LoadShaders("fbo.vert", "fbo.frag");
+		assert(_fboProgram != -1);
+
+		_fboRenderedTBOID = glGetUniformLocation(_fboProgram, "renderedTextureSampler");
+		assert(_fboRenderedTBOID != -1);
+
+		glUseProgram(_fboProgram);
+		glUniform1i(_fboRenderedTBOID, 0);
+		glUseProgram(0);
+
+		float vertices[] = 
+		{
+			-1.0f,  1.0f,	0.0f, 1.0f,
+			-1.0f, -1.0f,	0.0f, 0.0f,
+			 1.0f, -1.0f,	1.0f, 0.0f,
+			 1.0f,  1.0f,	1.0f, 1.0f,
+		};
+
+		glGenBuffers(1, &_fboVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, _fboVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices),
+			vertices, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 4, (void*)0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(float) * 4, (void*)(sizeof(float) * 2));
+	}
+	glBindVertexArray(0);
 
 	_globalTimer = 0.0f;
 
@@ -145,6 +200,11 @@ bool FBOSample::initContents()
 
 void FBOSample::destroyContents()
 {
+	glDeleteVertexArrays(1, &_fboVAO);
+	glDeleteBuffers(1, &_fboVBO);
+
+	glDeleteProgram(_fboProgram);
+
 	glDeleteVertexArrays(1, &_contentVAO);
 	glDeleteBuffers(1, &_contentVBO);
 	glDeleteBuffers(1, &_contentTransformBO);
@@ -195,6 +255,7 @@ void FBOSample::update(float dt)
 
 void FBOSample::render()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, _fboFBO);
 	glViewport(0, 0, windowWidth(), windowHeight());
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -204,13 +265,41 @@ void FBOSample::render()
 	{
 		glEnableVertexAttribArray(0);
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_BUFFER, _contentTransformTBO);
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 4);
 
+		glDisable(GL_BLEND);
+
 		glDisableVertexAttribArray(0);
 	}
 
+	glUseProgram(0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, windowWidth(), windowHeight());
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glUseProgram(_fboProgram);
+	{
+		glBindVertexArray(_fboVAO);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _fboRenderedTBO);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+
+		glBindVertexArray(0);
+	}
 	glUseProgram(0);
 }
 
